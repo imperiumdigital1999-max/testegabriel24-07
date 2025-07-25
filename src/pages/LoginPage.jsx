@@ -22,20 +22,20 @@ const LoginPage = () => {
         setIsLoading(true);
 
         if (isSignUp && !fullName) {
-          toast({
-              variant: "destructive",
-              title: "Campo obrigatório",
-              description: "Por favor, insira seu nome completo.",
-              duration: 3000,
-          });
-          setIsLoading(false);
-          return;
+            toast({
+                variant: "destructive",
+                title: "Campo obrigatório",
+                description: "Por favor, insira seu nome completo.",
+                duration: 3000,
+            });
+            setIsLoading(false);
+            return;
         }
 
         if (isSignUp) {
             // Processo de cadastro
             const { error } = await signUp(email, password, { data: { full_name: fullName } });
-            
+
             if (!error) {
                 toast({
                     title: "Cadastro bem-sucedido!",
@@ -50,20 +50,22 @@ const LoginPage = () => {
         } else {
             // Processo de login
             const { error } = await signIn(email, password);
-            
+
             if (!error) {
                 // Buscar o perfil do usuário para determinar o redirecionamento
                 try {
                     const { data: { user } } = await supabase.auth.getUser();
-                    
+
                     if (user) {
                         const { data: profile, error: profileError } = await supabase
                             .from('usuarios')
                             .select('tipo')
                             .eq('id', user.id)
                             .single();
-                        
+
                         if (!profileError && profile) {
+                            localStorage.setItem('userRole', profile.tipo); // <-- LINHA ADICIONADA
+
                             // Redirecionar baseado no tipo de usuário
                             if (profile.tipo === 'admin') {
                                 navigate('/admin/dashboard');
@@ -81,7 +83,6 @@ const LoginPage = () => {
                                 });
                             }
                         } else {
-                            // Se não encontrar o perfil, redirecionar para página padrão
                             navigate('/');
                             toast({
                                 title: "Login bem-sucedido!",
@@ -92,7 +93,6 @@ const LoginPage = () => {
                     }
                 } catch (error) {
                     console.error('Erro ao buscar perfil do usuário:', error);
-                    // Em caso de erro, redirecionar para página padrão
                     navigate('/');
                     toast({
                         title: "Login bem-sucedido!",
@@ -151,40 +151,3 @@ const LoginPage = () => {
                                 className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             />
                         </div>
-                        <div className="relative">
-                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                            <input
-                                type="password"
-                                placeholder="Senha (mínimo 6 caracteres)"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            />
-                        </div>
-                    </div>
-                    
-                    <div className="space-y-3 mt-8">
-                        <Button
-                            onClick={handleAuthAction}
-                            className="w-full h-12 bg-gradient-to-r from-purple-500 to-blue-500 hover:opacity-90 transition-opacity"
-                            disabled={isLoading}
-                        >
-                            {isSignUp ? <UserPlus className="mr-2 h-5 w-5" /> : <LogIn className="mr-2 h-5 w-5" />}
-                            {isLoading ? 'Aguarde...' : (isSignUp ? 'Cadastrar' : 'Entrar')}
-                        </Button>
-                        <Button
-                            onClick={() => setIsSignUp(!isSignUp)}
-                            variant="ghost"
-                            className="w-full h-12 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300"
-                            disabled={isLoading}
-                        >
-                           {isSignUp ? 'Já tem uma conta? Faça Login' : 'Não tem uma conta? Cadastre-se'}
-                        </Button>
-                    </div>
-                </motion.div>
-            </div>
-        </>
-    );
-};
-
-export default LoginPage;
