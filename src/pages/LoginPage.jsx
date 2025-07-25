@@ -6,6 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { LogIn, User, Lock, UserPlus, FileText } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { supabase } from '@/lib/customSupabaseClient';
 
 const LoginPage = () => {
     const { toast } = useToast();
@@ -31,27 +32,77 @@ const LoginPage = () => {
           return;
         }
 
-        const action = isSignUp ? signUp : signIn;
-        const options = isSignUp ? { data: { full_name: fullName } } : undefined;
-        
-        const { error } = await action(email, password, options);
-
-        if (!error) {
-            toast({
-                title: isSignUp ? "Cadastro bem-sucedido!" : "Login bem-sucedido!",
-                description: isSignUp ? "Confirme seu e-mail para continuar." : `Bem-vindo de volta!`,
-                duration: 3000,
-            });
-            if (!isSignUp) {
-                navigate('/');
-            } else {
-              setIsSignUp(false);
-              setEmail('');
-              setPassword('');
-              setFullName('');
+        if (isSignUp) {
+            // Processo de cadastro
+            const { error } = await signUp(email, password, { data: { full_name: fullName } });
+            
+            if (!error) {
+                toast({
+                    title: "Cadastro bem-sucedido!",
+                    description: "Confirme seu e-mail para continuar.",
+                    duration: 3000,
+                });
+                setIsSignUp(false);
+                setEmail('');
+                setPassword('');
+                setFullName('');
+            }
+        } else {
+            // Processo de login
+            const { error } = await signIn(email, password);
+            
+            if (!error) {
+                // Buscar o perfil do usuário para determinar o redirecionamento
+                try {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    
+                    if (user) {
+                        const { data: profile, error: profileError } = await supabase
+                            .from('usuarios')
+                            .select('tipo')
+                            .eq('id', user.id)
+                            .single();
+                        
+                        if (!profileError && profile) {
+                            // Redirecionar baseado no tipo de usuário
+                            if (profile.tipo === 'admin') {
+                                navigate('/admin/dashboard');
+                                toast({
+                                    title: "Login bem-sucedido!",
+                                    description: "Bem-vindo ao painel administrativo!",
+                                    duration: 3000,
+                                });
+                            } else {
+                                navigate('/');
+                                toast({
+                                    title: "Login bem-sucedido!",
+                                    description: "Bem-vindo de volta!",
+                                    duration: 3000,
+                                });
+                            }
+                        } else {
+                            // Se não encontrar o perfil, redirecionar para página padrão
+                            navigate('/');
+                            toast({
+                                title: "Login bem-sucedido!",
+                                description: "Bem-vindo de volta!",
+                                duration: 3000,
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao buscar perfil do usuário:', error);
+                    // Em caso de erro, redirecionar para página padrão
+                    navigate('/');
+                    toast({
+                        title: "Login bem-sucedido!",
+                        description: "Bem-vindo de volta!",
+                        duration: 3000,
+                    });
+                }
             }
         }
-        
+
         setIsLoading(false);
     };
 

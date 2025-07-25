@@ -28,14 +28,27 @@ export const AuthProvider = ({ children }) => {
         
         if (error && error.code !== 'PGRST116') {
           console.error('Erro ao buscar perfil:', error);
+          setUserProfile(null);
         } else {
           setUserProfile(profile);
+          // Salvar dados no localStorage para persistência
+          if (profile) {
+            localStorage.setItem('userRole', profile.tipo || 'aluno');
+            localStorage.setItem('userName', profile.nome || '');
+            localStorage.setItem('userEmail', profile.email || '');
+          }
         }
       } catch (error) {
         console.error('Erro ao buscar perfil:', error);
+        setUserProfile(null);
       }
     } else {
       setUserProfile(null);
+      // Limpar localStorage quando não há sessão
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('userAvatar');
     }
     
     setLoading(false);
@@ -103,20 +116,20 @@ export const AuthProvider = ({ children }) => {
         title: "Sign out Failed",
         description: error.message || "Something went wrong",
       });
-      setLoading(false);
-      // Limpar dados locais
+    } else {
+      // Limpar dados locais apenas se logout foi bem-sucedido
       setUser(null);
       setSession(null);
       setUserProfile(null);
       
-      // Limpar localStorage se houver dados salvos
+      // Limpar localStorage
       localStorage.removeItem('userRole');
       localStorage.removeItem('userName');
       localStorage.removeItem('userEmail');
       localStorage.removeItem('userAvatar');
-      
-      setLoading(false);
     }
+    
+    setLoading(false);
 
     return { error };
   }, [toast]);

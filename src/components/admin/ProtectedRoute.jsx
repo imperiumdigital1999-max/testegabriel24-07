@@ -14,7 +14,10 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  if (userProfile?.tipo !== 'admin') {
+  // Verificar tanto o userProfile quanto o localStorage para maior confiabilidade
+  const userRole = localStorage.getItem('userRole') || userProfile?.tipo;
+  
+  if (userRole !== 'admin') {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 

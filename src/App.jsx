@@ -39,21 +39,29 @@ const AppRoutes = () => {
   }
 
   if (session) {
-    if (userProfile && location.pathname === '/login') {
-      if (userProfile.tipo === 'admin') {
+    // Se estiver na página de login e já estiver logado, redirecionar baseado no tipo
+    if (location.pathname === '/login') {
+      const userRole = localStorage.getItem('userRole') || userProfile?.tipo;
+      
+      if (userRole === 'admin') {
         return <Navigate to="/admin/dashboard" replace />;
       } else {
         return <Navigate to="/" replace />;
       }
     }
 
-    if (userProfile?.tipo === 'aluno' && location.pathname.startsWith('/admin')) {
-      toast({
-        title: 'Acesso Negado',
-        description: 'Você não tem permissão para acessar o painel de administrador.',
-        variant: 'destructive',
-      });
-      return <Navigate to="/" replace />;
+    // Verificar acesso ao painel admin
+    if (location.pathname.startsWith('/admin')) {
+      const userRole = localStorage.getItem('userRole') || userProfile?.tipo;
+      
+      if (userRole !== 'admin') {
+        toast({
+          title: 'Acesso Negado',
+          description: 'Você não tem permissão para acessar o painel de administrador.',
+          variant: 'destructive',
+        });
+        return <Navigate to="/" replace />;
+      }
     }
   }
   
