@@ -11,10 +11,33 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState(null);
 
   const handleSession = useCallback(async (session) => {
     setSession(session);
     setUser(session?.user ?? null);
+    
+    if (session?.user) {
+      // Buscar perfil do usuário na tabela usuarios
+      try {
+        const { data: profile, error } = await supabase
+          .from('usuarios')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (error && error.code !== 'PGRST116') {
+          console.error('Erro ao buscar perfil:', error);
+        } else {
+          setUserProfile(profile);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar perfil:', error);
+      }
+    } else {
+      setUserProfile(null);
+    }
+    
     setLoading(false);
   }, []);
 
@@ -71,6 +94,7 @@ export const AuthProvider = ({ children }) => {
   }, [toast]);
 
   const signOut = useCallback(async () => {
+    setLoading(true);
     const { error } = await supabase.auth.signOut();
 
     if (error) {
@@ -79,6 +103,19 @@ export const AuthProvider = ({ children }) => {
         title: "Sign out Failed",
         description: error.message || "Something went wrong",
       });
+      setLoading(false);
+      // Limpar dados locais
+      setUser(null);
+      setSession(null);
+      setUserProfile(null);
+      
+      // Limpar localStorage se houver dados salvos
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('userAvatar');
+      
+      setLoading(false);
     }
 
     return { error };
@@ -87,6 +124,7 @@ export const AuthProvider = ({ children }) => {
   const value = useMemo(() => ({
     user,
     session,
+    userProfile,
     loading,
     signUp,
     signIn,

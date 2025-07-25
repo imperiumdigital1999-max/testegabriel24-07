@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import ProfileCard from '@/components/profile/ProfileCard';
 import EditProfileForm from '@/components/profile/EditProfileForm';
 import StatsGrid from '@/components/profile/StatsGrid';
@@ -10,6 +11,7 @@ import SettingsSection from '@/components/profile/SettingsSection';
 
 const ProfilePage = () => {
   const { toast } = useToast();
+  const { userProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     name: '',
@@ -20,17 +22,28 @@ const ProfilePage = () => {
   });
 
   useEffect(() => {
-    const savedName = localStorage.getItem('userName') || 'Estudante';
-    const savedEmail = localStorage.getItem('userEmail') || 'estudante@universidadedigital.com';
-    const savedAvatar = localStorage.getItem('userAvatar') || '';
+    if (userProfile) {
+      setProfileData(prev => ({
+        ...prev,
+        name: userProfile.nome || 'Estudante',
+        email: userProfile.email || 'estudante@universidadedigital.com',
+        avatar: '',
+        joinDate: new Date(userProfile.created_at).toLocaleDateString('pt-BR') || '2025-07-24'
+      }));
+    } else {
+      // Fallback para dados locais se não houver perfil do Supabase
+      const savedName = localStorage.getItem('userName') || 'Estudante';
+      const savedEmail = localStorage.getItem('userEmail') || 'estudante@universidadedigital.com';
+      const savedAvatar = localStorage.getItem('userAvatar') || '';
 
-    setProfileData(prev => ({
-      ...prev,
-      name: savedName,
-      email: savedEmail,
-      avatar: savedAvatar
-    }));
-  }, []);
+      setProfileData(prev => ({
+        ...prev,
+        name: savedName,
+        email: savedEmail,
+        avatar: savedAvatar
+      }));
+    }
+  }, [userProfile]);
 
   const handleSave = (editData) => {
     localStorage.setItem('userName', editData.name);
@@ -50,18 +63,6 @@ const ProfilePage = () => {
     });
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userEmail');
-    toast({
-      title: "Logout realizado",
-      description: "Você foi desconectado com sucesso",
-      duration: 3000,
-    });
-    // navigate to login is handled by the protected route, but could be explicit here too
-  };
-  
   return (
     <>
       <Helmet>
@@ -96,7 +97,6 @@ const ProfilePage = () => {
               onEdit={() => setIsEditing(true)}
               onSave={handleSave}
               onCancel={() => setIsEditing(false)}
-              onLogout={handleLogout}
             />
           </motion.div>
 

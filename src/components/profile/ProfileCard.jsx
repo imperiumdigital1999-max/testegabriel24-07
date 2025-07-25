@@ -2,9 +2,13 @@ import React from 'react';
 import { Camera, Edit3, Save, X, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useNavigate } from 'react-router-dom';
 
-const ProfileCard = ({ profileData, isEditing, onEdit, onSave, onCancel, onLogout }) => {
+const ProfileCard = ({ profileData, isEditing, onEdit, onSave, onCancel }) => {
   const { toast } = useToast();
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
 
   const handleAvatarChange = () => {
     toast({
@@ -13,6 +17,27 @@ const ProfileCard = ({ profileData, isEditing, onEdit, onSave, onCancel, onLogou
     });
   };
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await signOut();
+      if (!error) {
+        toast({
+          title: "Logout realizado com sucesso!",
+          description: "Você foi desconectado da sua conta.",
+          duration: 3000,
+        });
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Erro no logout:', error);
+      toast({
+        title: "Erro ao fazer logout",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
   return (
     <div className="glass rounded-2xl p-6 border border-white/10 space-y-6">
       <div className="text-center space-y-4">
@@ -79,7 +104,7 @@ const ProfileCard = ({ profileData, isEditing, onEdit, onSave, onCancel, onLogou
         )}
         
         <Button
-          onClick={onLogout}
+          onClick={handleLogout}
           variant="ghost"
           className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
         >

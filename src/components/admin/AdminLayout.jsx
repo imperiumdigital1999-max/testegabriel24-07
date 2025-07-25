@@ -23,18 +23,23 @@ const AdminLayout = ({ children }) => {
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = async () => {
-    const { error } = await signOut();
-    if (error) {
+    try {
+      const { error } = await signOut();
+      if (!error) {
+        toast({
+          title: 'Logout bem-sucedido!',
+          description: 'Você saiu da sua conta.',
+          duration: 3000,
+        });
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Erro no logout:', error);
       toast({
-        title: 'Erro ao sair',
-        description: error.message,
+        title: 'Erro ao fazer logout',
+        description: 'Tente novamente em alguns instantes.',
         variant: 'destructive',
-      });
-    } else {
-      navigate('/login');
-      toast({
-        title: 'Logout bem-sucedido!',
-        description: 'Você saiu da sua conta.',
+        duration: 3000,
       });
     }
   };
