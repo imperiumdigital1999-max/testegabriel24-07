@@ -151,3 +151,49 @@ const LoginPage = () => {
                                 className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             />
                         </div>
+
+                        <div className="relative">
+                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                            <input
+                                type="password"
+                                placeholder="Senha"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <Button
+                            onClick={handleAuthAction}
+                            disabled={isLoading}
+                            className="w-full py-3 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                    {isSignUp ? 'Criando conta...' : 'Entrando...'}
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center">
+                                    {isSignUp ? <UserPlus className="mr-2 h-5 w-5" /> : <LogIn className="mr-2 h-5 w-5" />}
+                                    {isSignUp ? 'Criar Conta' : 'Entrar'}
+                                </div>
+                            )}
+                        </Button>
+                    </div>
+
+                    <div className="text-center mt-6">
+                        <button
+                            onClick={() => setIsSignUp(!isSignUp)}
+                            className="text-purple-400 hover:text-purple-300 transition-colors duration-200"
+                        >
+                            {isSignUp ? 'Já tem uma conta? Faça login' : 'Não tem conta? Cadastre-se'}
+                        </button>
+                    </div>
+                </motion.div>
+            </div>
+        </>
+    );
+};
+
+export default LoginPage;
