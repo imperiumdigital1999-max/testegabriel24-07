@@ -57,13 +57,14 @@ const LoginPage = () => {
                     const { data: { user } } = await supabase.auth.getUser();
 
                     if (user) {
-                        const { data: profile, error: profileError } = await supabase
+                        const { data: profiles, error: profileError } = await supabase
                             .from('usuarios')
                             .select('tipo')
                             .eq('id', user.id)
-                            .single();
+                            .limit(1);
 
-                        if (!profileError && profile) {
+                        if (!profileError && profiles && profiles.length > 0) {
+                            const profile = profiles[0];
                             localStorage.setItem('userRole', profile.tipo); // <-- LINHA ADICIONADA
 
                             // Redirecionar baseado no tipo de usuário

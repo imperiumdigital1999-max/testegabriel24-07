@@ -20,16 +20,17 @@ export const AuthProvider = ({ children }) => {
     if (session?.user) {
       // Buscar perfil do usuário na tabela usuarios
       try {
-        const { data: profile, error } = await supabase
+        const { data: profiles, error } = await supabase
           .from('usuarios')
           .select('*')
           .eq('id', session.user.id)
-          .single();
+          .limit(1);
         
-        if (error && error.code !== 'PGRST116') {
+        if (error) {
           console.error('Erro ao buscar perfil:', error);
           setUserProfile(null);
         } else {
+          const profile = profiles && profiles.length > 0 ? profiles[0] : null;
           setUserProfile(profile);
           // Salvar dados no localStorage para persistência
           if (profile) {
@@ -110,7 +111,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     const { error } = await supabase.auth.signOut();
 
-    if (error) {
+    if (error && !error.message?.includes('Session from session_id claim in JWT does not exist')) {
       toast({
         variant: "destructive",
         title: "Sign out Failed",
@@ -127,6 +128,15 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('userName');
       localStorage.removeItem('userEmail');
       localStorage.removeItem('userAvatar');
+      
+      // Se o logout foi bem-sucedido ou se a sessão já não existia, mostrar sucesso
+      if (!error || error.message?.includes('Session from session_id claim in JWT does not exist')) {
+        toast({
+          title: "Logout realizado",
+          description: "Você foi desconectado com sucesso.",
+          duration: 3000,
+        });
+      }
     }
     
     setLoading(false);
