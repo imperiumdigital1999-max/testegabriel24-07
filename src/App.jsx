@@ -59,6 +59,7 @@ const AppRoutes = () => {
           title: 'Acesso Negado',
           description: 'Você não tem permissão para acessar o painel de administrador.',
           variant: 'destructive',
+          duration: 3000,
         });
         return <Navigate to="/" replace />;
       }
