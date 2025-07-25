@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, User, Lock, UserPlus, FileText } from 'lucide-react';
+import { LogIn, User, Lock, UserPlus, FileText, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { supabase } from '@/lib/customSupabaseClient';
 
@@ -17,6 +17,7 @@ const LoginPage = () => {
     const [fullName, setFullName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSignUp, setIsSignUp] = useState(false);
+    const [modoAdmin, setModoAdmin] = useState(false);
 
     const handleAuthAction = async () => {
         setIsLoading(true);
@@ -46,13 +47,13 @@ const LoginPage = () => {
                 setEmail('');
                 setPassword('');
                 setFullName('');
+                setModoAdmin(false);
             }
         } else {
             // Processo de login
             const { error } = await signIn(email, password);
 
             if (!error) {
-                // Buscar o perfil do usuário para determinar o redirecionamento
                 try {
                     const { data: { user } } = await supabase.auth.getUser();
 
@@ -67,14 +68,57 @@ const LoginPage = () => {
                             const profile = profiles[0];
                             localStorage.setItem('userRole', profile.tipo); // <-- LINHA ADICIONADA
 
-                            // Redirecionar baseado no tipo de usuário
-                            if (profile.tipo === 'admin') {
-                                navigate('/admin/dashboard');
+                            // Verificar se está em modo admin
+                            if (modoAdmin) {
+                                if (profile.tipo === 'admin') {
+                                    navigate('/admin/dashboard');
+                                    toast({
+                                        title: "Login de administrador bem-sucedido!",
+                                        description: "Bem-vindo ao painel administrativo!",
+                                        duration: 3000,
+                                    });
+                                } else {
+                                    // Fazer logout se não for admin
+                                    await supabase.auth.signOut();
+                                    toast({
+                                        variant: "destructive",
+                                        title: "Acesso negado",
+                                        description: "Esse usuário não tem permissão de administrador",
+                                        duration: 4000,
+                                    });
+                                    setIsLoading(false);
+                                    return;
+                                }
+                            } else {
+                                // Fluxo normal de aluno
+                                if (profile.tipo === 'admin') {
+                                    navigate('/admin/dashboard');
+                                    toast({
+                                        title: "Login bem-sucedido!",
+                                        description: "Bem-vindo ao painel administrativo!",
+                                        duration: 3000,
+                                    });
+                                } else {
+                                    navigate('/');
+                                    toast({
+                                        title: "Login bem-sucedido!",
+                                        description: "Bem-vindo de volta!",
+                                        duration: 3000,
+                                    });
+                                }
+                            }
+                        } else {
+                            if (modoAdmin) {
+                                // Fazer logout se não encontrou perfil e está em modo admin
+                                await supabase.auth.signOut();
                                 toast({
-                                    title: "Login bem-sucedido!",
-                                    description: "Bem-vindo ao painel administrativo!",
-                                    duration: 3000,
+                                    variant: "destructive",
+                                    title: "Acesso negado",
+                                    description: "Esse usuário não tem permissão de administrador",
+                                    duration: 4000,
                                 });
+                                setIsLoading(false);
+                                return;
                             } else {
                                 navigate('/');
                                 toast({
@@ -83,23 +127,29 @@ const LoginPage = () => {
                                     duration: 3000,
                                 });
                             }
-                        } else {
-                            navigate('/');
-                            toast({
-                                title: "Login bem-sucedido!",
-                                description: "Bem-vindo de volta!",
-                                duration: 3000,
-                            });
                         }
                     }
                 } catch (error) {
                     console.error('Erro ao buscar perfil do usuário:', error);
-                    navigate('/');
-                    toast({
-                        title: "Login bem-sucedido!",
-                        description: "Bem-vindo de volta!",
-                        duration: 3000,
-                    });
+                    if (modoAdmin) {
+                        // Fazer logout se houve erro e está em modo admin
+                        await supabase.auth.signOut();
+                        toast({
+                            variant: "destructive",
+                            title: "Erro de autenticação",
+                            description: "Não foi possível verificar as permissões de administrador",
+                            duration: 4000,
+                        });
+                        setIsLoading(false);
+                        return;
+                    } else {
+                        navigate('/');
+                        toast({
+                            title: "Login bem-sucedido!",
+                            description: "Bem-vindo de volta!",
+                            duration: 3000,
+                        });
+                    }
                 }
             }
         }
@@ -129,6 +179,23 @@ const LoginPage = () => {
                         <p className="text-gray-400">{isSignUp ? 'Comece sua jornada de aprendizado.' : 'Acesse sua conta para continuar.'}</p>
                     </div>
 
+                    {/* Botão Modo Administrador - apenas no login */}
+                    {!isSignUp && (
+                        <div className="mb-6">
+                            <Button
+                                onClick={() => setModoAdmin(!modoAdmin)}
+                                variant={modoAdmin ? "default" : "ghost"}
+                                className={`w-full py-3 transition-all duration-300 ${
+                                    modoAdmin 
+                                        ? 'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white neon-glow' 
+                                        : 'hover:bg-white/5 text-gray-300 border border-white/10'
+                                }`}
+                            >
+                                <Shield className="mr-2 h-5 w-5" />
+                                {modoAdmin ? 'Modo Administrador Ativo' : 'Sou Administrador'}
+                            </Button>
+                        </div>
+                    )}
                     <div className="space-y-4">
                         {isSignUp && (
                             <div className="relative">
@@ -185,7 +252,10 @@ const LoginPage = () => {
 
                     <div className="text-center mt-6">
                         <button
-                            onClick={() => setIsSignUp(!isSignUp)}
+                            onClick={() => {
+                                setIsSignUp(!isSignUp);
+                                setModoAdmin(false); // Reset modo admin ao trocar entre login/cadastro
+                            }}
                             className="text-purple-400 hover:text-purple-300 transition-colors duration-200"
                         >
                             {isSignUp ? 'Já tem uma conta? Faça login' : 'Não tem conta? Cadastre-se'}
