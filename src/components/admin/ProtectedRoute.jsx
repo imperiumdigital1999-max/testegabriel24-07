@@ -26,8 +26,8 @@ const ProtectedRoute = ({ children }) => {
   if (userRole !== 'admin') {
     // Mostrar toast de acesso negado
     toast({
-      title: 'Acesso Negado',
-      description: 'Você não tem permissão para acessar o painel de administrador.',
+      title: '🚫 Acesso Negado',
+      description: 'Esta área é restrita apenas para administradores.',
       variant: 'destructive',
       duration: 4000,
     });

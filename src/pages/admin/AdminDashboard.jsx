@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
-import { Users, BookOpen, Wrench, BarChart2, PlusCircle, Bell, User, TrendingUp, Activity, AlertCircle } from 'lucide-react';
+import { Users, BookOpen, Wrench, BarChart2, PlusCircle, Bell, User, TrendingUp, Activity, AlertCircle, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -52,12 +52,12 @@ const AdminDashboard = () => {
             <div className="p-4 lg:p-8 space-y-8">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center neon-glow">
-                            <span className="text-white font-bold text-lg">🛡️</span>
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center neon-glow">
+                            <Shield className="h-6 w-6 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-white">Painel de Administração</h1>
-                            <p className="text-gray-400">Controle total da Universidade Digital</p>
+                            <h1 className="text-3xl lg:text-4xl font-bold text-white">Admin Dashboard</h1>
+                            <p className="text-gray-400">Painel de controle administrativo</p>
                         </div>
                     </div>
                 </motion.div>
@@ -72,10 +72,63 @@ const AdminDashboard = () => {
                     <div className="flex items-center space-x-3">
                         <AlertCircle className="h-5 w-5 text-red-400" />
                         <div>
-                            <p className="text-red-300 font-medium">Área Restrita - Acesso Administrativo</p>
-                            <p className="text-red-400/80 text-sm">Você está acessando o painel de controle da plataforma.</p>
+                            <p className="text-red-300 font-medium">🔒 Área Restrita - Apenas Administradores</p>
+                            <p className="text-red-400/80 text-sm">Acesso exclusivo para usuários com tipo = "admin"</p>
                         </div>
                     </div>
+                </motion.div>
+
+                {/* Admin Menu Cards */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                >
+                    <Link to="/admin/users">
+                        <div className="glass rounded-2xl p-6 border border-white/10 card-hover cursor-pointer group">
+                            <div className="flex items-center space-x-4 mb-4">
+                                <div className="p-3 rounded-xl bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30 transition-colors">
+                                    <Users className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-white">Gerenciar Usuários</h3>
+                                    <p className="text-gray-400 text-sm">Adicionar, editar e remover usuários</p>
+                                </div>
+                            </div>
+                            <p className="text-gray-300 text-sm">Controle total sobre contas de usuários da plataforma</p>
+                        </div>
+                    </Link>
+
+                    <Link to="/admin/courses">
+                        <div className="glass rounded-2xl p-6 border border-white/10 card-hover cursor-pointer group">
+                            <div className="flex items-center space-x-4 mb-4">
+                                <div className="p-3 rounded-xl bg-purple-500/20 text-purple-400 group-hover:bg-purple-500/30 transition-colors">
+                                    <BookOpen className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-white">Gerenciar Cursos</h3>
+                                    <p className="text-gray-400 text-sm">Criar e editar conteúdo educacional</p>
+                                </div>
+                            </div>
+                            <p className="text-gray-300 text-sm">Administre todo o catálogo de cursos disponíveis</p>
+                        </div>
+                    </Link>
+
+                    <Link to="/admin/tools">
+                        <div className="glass rounded-2xl p-6 border border-white/10 card-hover cursor-pointer group">
+                            <div className="flex items-center space-x-4 mb-4">
+                                <div className="p-3 rounded-xl bg-green-500/20 text-green-400 group-hover:bg-green-500/30 transition-colors">
+                                    <Wrench className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-white">Ferramentas IA</h3>
+                                    <p className="text-gray-400 text-sm">Configurar ferramentas de IA</p>
+                                </div>
+                            </div>
+                            <p className="text-gray-300 text-sm">Gerencie as ferramentas de inteligência artificial</p>
+                        </div>
+                    </Link>
                 </motion.div>
                 <motion.div
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"

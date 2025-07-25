@@ -56,10 +56,10 @@ const AppRoutes = () => {
       
       if (userRole !== 'admin') {
         toast({
-          title: 'Acesso Negado',
-          description: 'Você não tem permissão para acessar o painel de administrador.',
+          title: '🚫 Acesso Negado - Admin Dashboard',
+          description: 'Esta seção é exclusiva para usuários com tipo = "admin".',
           variant: 'destructive',
-          duration: 3000,
+          duration: 4000,
         });
         return <Navigate to="/" replace />;
       }

@@ -21,7 +21,7 @@ const Layout = ({ children }) => {
   ];
 
   if (isAdmin) {
-    navItems.push({ icon: ShieldCheck, label: 'Painel Admin', path: '/admin/dashboard' });
+    navItems.push({ icon: ShieldCheck, label: 'Admin Dashboard', path: '/admin/dashboard' });
   }
 
   const isActive = (path) => location.pathname === path || (path === '/admin' && location.pathname.startsWith('/admin'));
